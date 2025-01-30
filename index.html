@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catatan Produk Toko</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f9f9f9;
+            overflow-x: hidden;
+            text-transform: capitalize;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            text-align: center;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            text-transform: capitalize;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        #sidebar {
+            height: 100%;
+            width: 250px;
+            position: fixed;
+            top: 0;
+            left: -250px;
+            background-color: #111;
+            color: white;
+            padding-top: 60px;
+            transition: 0.3s;
+            z-index: 1000;
+            text-transform: capitalize;
+        }
+
+        #sidebar a {
+            padding: 8px 8px 8px 32px;
+            text-decoration: none;
+            font-size: 25px;
+            color: #818181;
+            display: block;
+            transition: 0.3s;
+        }
+
+        #sidebar a:hover {
+            color: #f1f1f1;
+        }
+
+        #sidebar .closebtn {
+            position: absolute;
+            top: 0;
+            right: 25px;
+            font-size: 36px;
+            margin-left: 50px;
+        }
+
+        #menu-btn {
+            font-size: 30px;
+            color: #007bff;
+            cursor: pointer;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            text-transform: capitalize;
+        }
+
+        #productPage, #calculatorPage {
+            display: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            text-transform: capitalize;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background: #f4f4f4;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-transform: capitalize;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .form-group label {
+            font-weight: bold;
+        }
+
+        #productSearch, #calculatorSearch {
+            margin-bottom: 20px;
+            padding: 8px;
+            width: 100%;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .category-filter {
+            margin-bottom: 20px;
+        }
+
+        .category-filter select {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeSidebar()">&times;</a>
+        <a href="#" onclick="showPage('productPage')">Produk</a>
+        <a href="#" onclick="showPage('calculatorPage')">Kalkulator</a>
+    </div>
+
+    <span id="menu-btn" onclick="openSidebar()">&#9776;</span>
+
+    <div id="productPage" class="container">
+        <h1>Catatan Produk Toko</h1>
+        <div>
+            <button class="btn" onclick="toggleForm()">Tambah Produk</button>
+        </div>
+        <div id="productForm" style="display: none;">
+            <div class="form-group">
+                <label for="productCategory">Kategori:</label>
+                <input type="text" id="productCategory" class="capitalize">
+            </div>
+            <div class="form-group">
+                <label for="productName">Merk Produk:</label>
+                <input type="text" id="productName" class="capitalize">
+            </div>
+            <div class="form-group">
+                <label for="productPrice">Harga Produk:</label>
+                <input type="text" id="productPrice" class="capitalize">
+            </div>
+            <button class="btn" onclick="addProduct()">Simpan Produk</button>
+        </div>
+
+        <input type="text" id="productSearch" placeholder="Cari produk..." oninput="filterProducts()">
+        <div class="category-filter">
+            <label for="categoryFilter">Filter Berdasarkan Kategori:</label>
+            <select id="categoryFilter" onchange="filterProducts()">
+                <option value="">Semua Kategori</option>
+            </select>
+        </div>
+        <div id="productCategories"></div>
+    </div>
+
+    <div id="calculatorPage" class="container">
+        <h1>Kalkulator Belanja</h1>
+        <input type="text" id="calculatorSearch" placeholder="Cari produk..." oninput="filterProductsInCalculator()">
+        <table>
+            <thead>
+                <tr>
+                    <th>Merk Produk</th>
+                    <th>Harga</th>
+                    <th>Jumlah</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody id="cartTableBody"></tbody>
+        </table>
+        <h3>Total: Rp <span id="totalPrice">0</span></h3>
+    </div>
+
+    <div id="editDeletePage" class="container" style="display: none;">
+        <h1>Edit atau Hapus Produk</h1>
+    
+        <!-- Form untuk Edit Produk -->
+        <div>
+            <h3>Edit Produk</h3>
+            <label for="editProductCategory">Kategori:</label>
+            <input type="text" id="editProductCategory">
+            <label for="editProductName">Merk Produk:</label>
+            <input type="text" id="editProductName">
+            <label for="editProductPrice">Harga Produk:</label>
+            <input type="text" id="editProductPrice">
+            <button class="btn" onclick="updateProduct()">Update Produk</button>
+        </div>
+    
+        <hr>
+    
+        <!-- Form untuk Hapus Produk -->
+        <div>
+            <h3>Hapus Produk</h3>
+            <label for="deleteProductName">Pilih Produk yang Akan Dihapus:</label>
+            <select id="deleteProductName">
+                <!-- List produk yang bisa dipilih untuk dihapus -->
+            </select>
+            <button class="btn btn-danger" onclick="deleteProduct()">Hapus Produk</button>
+        </div>
+    </div>
+    
+
+    <script>
+        let products = JSON.parse(localStorage.getItem('products')) || [];
+
+        function openSidebar() {
+            document.getElementById("sidebar").style.left = "0";
+        }
+
+        function closeSidebar() {
+            document.getElementById("sidebar").style.left = "-250px";
+        }
+
+        function showPage(pageId) {
+            document.getElementById('productPage').style.display = 'none';
+            document.getElementById('calculatorPage').style.display = 'none';
+            document.getElementById(pageId).style.display = 'block';
+        }
+
+        function toggleForm() {
+            const form = document.getElementById('productForm');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function addProduct() {
+            const category = document.getElementById('productCategory').value.trim();
+            const name = document.getElementById('productName').value.trim();
+            const price = parseInt(document.getElementById('productPrice').value.trim(), 10);
+
+            if (!category || !name || isNaN(price)) {
+                alert('Isi semua kolom dengan benar!');
+                return;
+            }
+
+            products.push({ category, name, price });
+            localStorage.setItem('products', JSON.stringify(products));
+            renderProducts();
+        }
+
+        function renderProducts() {
+            const productCategories = document.getElementById('productCategories');
+            const categoryFilter = document.getElementById('categoryFilter');
+            productCategories.innerHTML = '';
+            const categories = [...new Set(products.map(p => p.category))];
+            
+            // Update category filter
+            categoryFilter.innerHTML = '<option value="">Semua Kategori</option>';
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.textContent = category;
+                categoryFilter.appendChild(option);
+            });
+
+            categories.forEach(category => {
+                const section = document.createElement('div');
+                const title = document.createElement('h3');
+                title.textContent = category;
+                section.appendChild(title);
+
+                const table = document.createElement('table');
+                table.innerHTML = `<thead>
+                    <tr>
+                        <th>Merk Produk</th>
+                        <th>Harga</th>
+                    </tr>
+                </thead>`;
+
+                const tbody = document.createElement('tbody');
+                products.filter(p => p.category === category).forEach(product => {
+                    const row = `<tr>
+                        <td>${product.name}</td>
+                        <td>${product.price}</td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+
+                table.appendChild(tbody);
+                section.appendChild(table);
+                productCategories.appendChild(section);
+            });
+        }
+
+        
+
+        function renderCart(productsToShow = products) {
+    const cartTableBody = document.getElementById('cartTableBody');
+    cartTableBody.innerHTML = '';
+    let total = 0;
+
+    productsToShow.forEach(product => {
+        const row = document.createElement('tr');
+
+        const nameCell = document.createElement('td');
+        nameCell.textContent = product.name;
+
+        const priceCell = document.createElement('td');
+        priceCell.textContent = product.price;
+
+        const qtyCell = document.createElement('td');
+        const qtyInput = document.createElement('input');
+        qtyInput.type = 'number';
+        qtyInput.min = 0;
+        qtyInput.value = 0;
+
+        const subtotalCell = document.createElement('td');
+        subtotalCell.textContent = 0;
+
+        qtyInput.addEventListener('input', () => {
+            const qty = parseInt(qtyInput.value, 10) || 0;
+            const subtotal = product.price * qty;
+            subtotalCell.textContent = subtotal.toLocaleString('id-ID');
+            updateTotal();
+        });
+
+        qtyCell.appendChild(qtyInput);
+
+        row.appendChild(nameCell);
+        row.appendChild(priceCell);
+        row.appendChild(qtyCell);
+        row.appendChild(subtotalCell);
+
+        cartTableBody.appendChild(row);
+    });
+
+    function updateTotal() {
+        const subtotalCells = document.querySelectorAll('#cartTableBody td:last-child');
+        total = Array.from(subtotalCells).reduce((sum, cell) => {
+            return sum + parseInt(cell.textContent.replace(/\./g, '') || '0', 10);
+        }, 0);
+        document.getElementById('totalPrice').textContent = total.toLocaleString('id-ID');
+    }
+}
+
+        function filterProducts() {
+            const searchTerm = document.getElementById('productSearch').value.toLowerCase();
+            const selectedCategory = document.getElementById('categoryFilter').value;
+
+            const filteredProducts = products.filter(product => {
+                const matchesCategory = selectedCategory ? product.category === selectedCategory : true;
+                const matchesSearch = product.name.toLowerCase().includes(searchTerm);
+                return matchesCategory && matchesSearch;
+            });
+
+            renderFilteredProducts(filteredProducts);
+        }
+
+        function filterProductsInCalculator() {
+            const searchTerm = document.getElementById('calculatorSearch').value.toLowerCase();
+            const filteredProducts = products.filter(product => product.name.toLowerCase().includes(searchTerm));
+            renderCart(filteredProducts);
+        }
+
+        function renderFilteredProducts(filteredProducts) {
+            const productCategories = document.getElementById('productCategories');
+            productCategories.innerHTML = '';
+            const categories = [...new Set(filteredProducts.map(p => p.category))];
+
+            categories.forEach(category => {
+                const section = document.createElement('div');
+                const title = document.createElement('h3');
+                title.textContent = category;
+                section.appendChild(title);
+
+                const table = document.createElement('table');
+                table.innerHTML = `<thead>
+                    <tr>
+                        <th>Merk Produk</th>
+                        <th>Harga</th>
+                    </tr>
+                </thead>`;
+
+                const tbody = document.createElement('tbody');
+                filteredProducts.filter(p => p.category === category).forEach(product => {
+                    const row = `<tr>
+                        <td>${product.name}</td>
+                        <td>${product.price}</td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+
+                table.appendChild(tbody);
+                section.appendChild(table);
+                productCategories.appendChild(section);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+    showPage('productPage');
+    });
+
+
+        // Inisialisasi tampilan awal
+        renderProducts();
+        renderCart();
+    </script>
+</body>
+</html>
