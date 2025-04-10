@@ -186,7 +186,7 @@
             <button class="btn" onclick="addProduct()">Simpan Produk</button>
         </div>
 
-        <input type="text" id="productSearch" placeholder="Cari produk..." oninput="filterProducts()">
+        <input type="text" id="productSearch" placeholder="Cari produk...">
         <div class="category-filter">
             <label for="categoryFilter">Filter Berdasarkan Kategori:</label>
             <select id="categoryFilter" onchange="filterProducts()">
@@ -198,7 +198,7 @@
 
     <div id="calculatorPage" class="container">
         <h1>Kalkulator Belanja</h1>
-        <input type="text" id="calculatorSearch" placeholder="Cari produk..." oninput="filterProductsInCalculator()">
+        <input type="text" id="productSearch" placeholder="Cari produk...">
         <table>
             <thead>
                 <tr>
@@ -245,6 +245,12 @@
     <script>
         let products = JSON.parse(localStorage.getItem('products')) || [];
 
+        function capitalizeWords(str) {
+        return str
+            .toLowerCase()
+            .replace(/\b\w/g, char => char.toUpperCase());
+        }
+
         function openSidebar() {
             document.getElementById("sidebar").style.left = "0";
         }
@@ -264,20 +270,39 @@
             form.style.display = form.style.display === 'none' ? 'block' : 'none';
         }
 
-        function addProduct() {
-            const category = document.getElementById('productCategory').value.trim();
-            const name = document.getElementById('productName').value.trim();
-            const price = parseInt(document.getElementById('productPrice').value.trim(), 10);
+        function formatRupiah(angka) {
+            let numberString = angka.replace(/[^,\d]/g, '').toString();
+            let split = numberString.split(',');
+            let sisa = split[0].length % 3;
+            let rupiah = split[0].substr(0, sisa);
+            let ribuan = split[0].substr(sisa).match(/\d{3}/gi);
 
-            if (!category || !name || isNaN(price)) {
+            if (ribuan) {
+                let separator = sisa ? '.' : '';
+                rupiah += separator + ribuan.join('.');
+            }
+
+            return split[1] !== undefined ? rupiah + ',' + split[1] : rupiah;
+        }
+
+        function addProduct() {
+            let kategoriInput = document.getElementById('productCategory').value.trim();
+            let merkInput = document.getElementById('productName').value.trim();
+            const price = parseInt(document.getElementById('productPrice').value.replace(/\./g, '').trim(), 10);
+
+            let kategori = capitalizeWords(kategoriInput);
+            let merk = capitalizeWords(merkInput);
+
+            if (!kategori || !merk || isNaN(price)) {
                 alert('Isi semua kolom dengan benar!');
                 return;
             }
 
-            products.push({ category, name, price });
+            products.push({ category: kategori, name: merk, price });
             localStorage.setItem('products', JSON.stringify(products));
             renderProducts();
-        }
+            }
+
 
         function renderProducts() {
             const productCategories = document.getElementById('productCategories');
@@ -311,7 +336,7 @@
                 products.filter(p => p.category === category).forEach(product => {
                     const row = `<tr>
                         <td>${product.name}</td>
-                        <td>${product.price}</td>
+                        <td>Rp.${product.price.toLocaleString('id-ID')}</td>
                     </tr>`;
                     tbody.innerHTML += row;
                 });
@@ -426,8 +451,45 @@
             });
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function () {
     showPage('productPage');
+
+    // Auto-capitalize input saat diketik
+    document.getElementById('productCategory').addEventListener('input', function () {
+        this.value = capitalizeWords(this.value);
+    });
+
+    document.getElementById('productName').addEventListener('input', function () {
+        this.value = capitalizeWords(this.value);
+    });
+
+    document.getElementById('editProductCategory').addEventListener('input', function () {
+        this.value = capitalizeWords(this.value);
+    });
+
+    document.getElementById('editProductName').addEventListener('input', function () {
+        this.value = capitalizeWords(this.value);
+    });
+
+    document.getElementById('productPrice').addEventListener('input', function () {
+        this.value = formatRupiah(this.value);
+    });
+
+    document.getElementById('editProductPrice').addEventListener('input', function () {
+        this.value = formatRupiah(this.value);
+    });
+
+    // Capitalize pencarian produk saat diketik
+    document.getElementById('productSearch').addEventListener('input', function (e) {
+        this.value = capitalizeWords(this.value);
+        filterProducts();
+    });
+
+    document.getElementById('calculatorSearch').addEventListener('input', function (e) {
+        this.value = capitalizeWords(this.value);
+        filterProductsInCalculator();
+    });
+
     });
 
 
