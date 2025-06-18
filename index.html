@@ -91,10 +91,11 @@
             font-size: 30px;
             color: #007bff;
             cursor: pointer;
-            position: absolute;
+            position: inline-block;
             top: 20px;
             left: 20px;
             text-transform: capitalize;
+            margin: 10px 0;
         }
 
         #productPage, #calculatorPage {
@@ -163,9 +164,8 @@
         <a href="#" onclick="showPage('calculatorPage')">Kalkulator</a>
     </div>
 
-    <span id="menu-btn" onclick="openSidebar()">&#9776;</span>
-
     <div id="productPage" class="container">
+        <span id="menu-btn" onclick="openSidebar()">&#9776;</span>
         <h1>Catatan Produk Toko</h1>
         <div>
             <button class="btn" onclick="toggleForm()">Tambah Produk</button>
